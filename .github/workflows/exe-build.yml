@@ -1,13 +1,11 @@
 name: windows exe Release Workflow
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_version:
-        description: 'Release Version (e.g., v1.0.0)'
-        required: true
-        type: string
-
+  # test only
+  push:
+    branches:
+      - main
+      - master
 jobs:
   release:
     runs-on: windows-latest
@@ -78,10 +76,18 @@ jobs:
           $zipFile = "build-${{ github.event.inputs.release_version }}.zip"
           Compress-Archive -Path "./build/*" -DestinationPath $zipFile -Force
 
-      - name: 创建 GitHub Release 并上传构建产物
-        uses: softprops/action-gh-release@v2
+      - uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.event.inputs.release_version }}
-          files: build-${{ github.event.inputs.release_version }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: build-${{ github.event.inputs.release_version }}.zip
+          path: ./build
+          if-no-files-found: error
+          compression-level: 9
+
+
+      # - name: 创建 GitHub Release 并上传构建产物
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: ${{ github.event.inputs.release_version }}
+      #     files: build-${{ github.event.inputs.release_version }}.zip
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
