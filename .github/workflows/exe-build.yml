@@ -13,10 +13,12 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 设置 Python 3.12
-        uses: actions/setup-python@v5
+      - name: Setup uv with Python 3.12.9
+        uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
         with:
-          python-version: '3.12.9'
+          python-version: 3.12.9
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
 
       - name: 执行所有任务（创建目录、下载、解压、复制文件、安装依赖）
@@ -51,13 +53,14 @@ jobs:
               Write-Host "错误: PyStand.exe 未找到！"
               exit 1
           }
-
+          cd ./dep_build
           Write-Host "==== 创建 Python venv 在 dep_build ===="
-          python -m venv .\dep_build\venv
+          uv venv
 
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
-          .\dep_build\venv\Scripts\python.exe -m pip install --upgrade pip
-          .\dep_build\venv\Scripts\python.exe -m pip install .
+          uv pip install .
+
+          cd ..
 
           Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
           Copy-Item -Path "./dep_build/venv/Lib/site-packages" -Destination "./build/site-packages" -Recurse -Force
