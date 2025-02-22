@@ -99,7 +99,7 @@ jobs:
           path: ./build
           if-no-files-found: error
           compression-level: 9
-      
+          include-hidden-files: true
 
       # - name: 创建 GitHub Release 并上传构建产物
       #   uses: softprops/action-gh-release@v2
