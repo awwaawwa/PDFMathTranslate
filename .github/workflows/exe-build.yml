@@ -73,6 +73,10 @@ jobs:
               Write-Host "错误: script/_pystand_static.int 未找到！"
               exit 1
           }
+      - name: Test show version
+        run: |
+          uv --version
+          ./build/pdf2zh.exe --version
 
       - uses: actions/upload-artifact@v4
         with:
