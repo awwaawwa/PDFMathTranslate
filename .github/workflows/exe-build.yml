@@ -53,14 +53,12 @@ jobs:
               Write-Host "错误: PyStand.exe 未找到！"
               exit 1
           }
-          cd ./dep_build
           Write-Host "==== 创建 Python venv 在 dep_build ===="
-          uv venv venv
+          uv venv ./dep_build/venv
 
-          venv\Scripts\activate
+          ./dep_build/venv/Scripts/activate
 
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
-          cd ..
           uv pip install .
 
           Write-Host "==== 复制 venv/Lib/site-packages 到 build/ ===="
@@ -75,10 +73,6 @@ jobs:
               Write-Host "错误: script/_pystand_static.int 未找到！"
               exit 1
           }
-
-          Write-Host "==== 压缩 build 目录 ===="
-          $zipFile = "build-${{ github.event.inputs.release_version }}.zip"
-          Compress-Archive -Path "./build/*" -DestinationPath $zipFile -Force
 
       - uses: actions/upload-artifact@v4
         with:
