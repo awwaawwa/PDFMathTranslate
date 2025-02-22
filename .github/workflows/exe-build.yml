@@ -55,7 +55,9 @@ jobs:
           }
           cd ./dep_build
           Write-Host "==== 创建 Python venv 在 dep_build ===="
-          uv venv
+          uv venv .venv
+
+          .venv\Scripts\activate
 
           Write-Host "==== 在 venv 环境中安装项目依赖 ===="
           uv pip install .
