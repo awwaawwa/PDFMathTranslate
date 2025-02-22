@@ -76,7 +76,7 @@ jobs:
 
           Write-Host "==== 压缩 build 目录 ===="
           $zipFile = "build-${{ github.event.inputs.release_version }}.zip"
-          Compress-Archive -Path "./build/*" -DestinationPath $zipFile -Force
+          Compress-Archive -Path "./build/*" -DestinationPath $zipFile -Force -CompressionLevel Fastest
 
       - name: Test show version
         run: |
@@ -110,11 +110,23 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const response = await github.rest.repos.getLatestRelease({
+            const releases = await github.rest.repos.listReleases({
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            return response.data.id;
+            
+            if (releases.data.length === 0) {
+              throw new Error('No releases found');
+            }
+            
+            // Sort by created_at in descending order
+            const sortedReleases = releases.data.sort((a, b) => 
+              new Date(b.created_at) - new Date(a.created_at)
+            );
+            
+            const latestRelease = sortedReleases[0];
+            console.log(`Found latest release: ${latestRelease.tag_name} (created at ${latestRelease.created_at})`);
+            return latestRelease.tag_name;
 
       - name: Upload to latest release
         uses: softprops/action-gh-release@v2
