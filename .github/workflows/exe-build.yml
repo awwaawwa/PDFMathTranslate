@@ -73,6 +73,11 @@ jobs:
               Write-Host "错误: script/_pystand_static.int 未找到！"
               exit 1
           }
+
+          Write-Host "==== 压缩 build 目录 ===="
+          $zipFile = "build-${{ github.event.inputs.release_version }}.zip"
+          Compress-Archive -Path "./build/*" -DestinationPath $zipFile -Force
+
       - name: Test show version
         run: |
           uv --version
@@ -96,15 +101,26 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: build-${{ github.event.inputs.release_version }}.zip
-          path: ./build
+          path: build-${{ github.event.inputs.release_version }}.zip
           if-no-files-found: error
-          compression-level: 9
-          include-hidden-files: true
+          compression-level: 0
 
-      # - name: 创建 GitHub Release 并上传构建产物
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     tag_name: ${{ github.event.inputs.release_version }}
-      #     files: build-${{ github.event.inputs.release_version }}.zip
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get latest release
+        id: latest_release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const response = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            return response.data.id;
+
+      - name: Upload to latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.latest_release.outputs.result }}
+          files: |
+            build-${{ github.event.inputs.release_version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
